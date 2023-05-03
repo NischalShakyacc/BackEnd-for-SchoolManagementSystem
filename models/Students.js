@@ -18,8 +18,8 @@ const UserStudentSchema = new Schema({
     date:{
         type: Date,
         default: Date.now
-    },
+    }
 })
 
-const User = mongoose.model('studentUser',UserStudentSchema);
+const User = mongoose.model('studentusers',UserStudentSchema);
 module.exports = User;
