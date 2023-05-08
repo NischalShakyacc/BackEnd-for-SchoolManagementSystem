@@ -15,10 +15,9 @@ GET '/api/auth/getuser'.
 
 router.get('/', fetchuser, (req,res)=>{
     obj = {
-        a: 'nscihal',
+        a: 'nischal',
         number: 34
     }
-
     res.json(obj);
 })
 
