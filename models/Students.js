@@ -2,10 +2,6 @@ const mongoose = require('mongoose');
 const {Schema} = mongoose;
 
 const UserStudentSchema = new Schema({
-    name:{
-        type: String,
-        required: true
-    },
     username:{
         type: String,
         required: true,
@@ -14,6 +10,10 @@ const UserStudentSchema = new Schema({
     password:{
         type: String,
         required: true
+    },
+    usertype:{
+        type:String,
+        required:true
     },
     date:{
         type: Date,

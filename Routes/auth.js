@@ -21,12 +21,11 @@ Doesnt require Authentication (No login required)
 
 router.post('/createuser',
     [
-        body('name',"Enter a Valid Name >3").trim().isLength({min:3}),
         body('username',"Username is wrong").trim().isLength({min:3}),
         body('password','incorrect password').isLength({min:3})
     ]
 ,async (req,res)=>{
-    console.log(req.body);
+    let success = false;
 
     /*
     send data to database
@@ -39,14 +38,18 @@ router.post('/createuser',
     // If errors return bad request along with errors
     const errors = validationResult(req);
     if(!errors.isEmpty()){
-        return res.status(400).json({errors: errors.array()});
+        success = false;
+        return res.status(400).json({success,errors: errors.array()});
     }
 
     try{
     //Check whether the same username exists already
-    let  user = await UserStd.findOne({username: req.body.username});
+    let  user = await UserStd.findOne({
+        username: req.body.username
+        });
     if(user){
-        return res.status(400).json({error: "Sorry a user with this username already exists"})
+        success = false;
+        return res.status(400).json({success,error: "Sorry a user with this username already exists"})
     }
 
     //Encrypting the password (hashing)
@@ -55,7 +58,7 @@ router.post('/createuser',
 
     //Create a new User
     user = await UserStd.create({
-        name: req.body.name,
+        usertype: req.body.usertype,
         username: req.body.username,
         password: secPassword,
     })
@@ -68,7 +71,8 @@ router.post('/createuser',
     }
     const authToken = jwt.sign(data, JWT_SECRET);
 
-    res.json({authToken})
+    success=true;
+    res.json({success,authToken})
 
     }  catch(error){
         console.log(error.message);
@@ -105,22 +109,28 @@ router.post('/login',[
     body('username', 'Not a valid username').isLength({min: 5}),
     body('password', 'Password cannot be empty.').exists(),
 ],async (req, res) =>{
+    let success = false;
     //Checking for errors
     const errors = validationResult(req);
     if(!errors.isEmpty()){
         return res.status(400).json({errors: errors.array()});
     }
 
-    const {username, password} = req.body;
+    const {username, password,usertype} = req.body;
     try {
-        let user = await UserStd.findOne({username});
+        let user = await UserStd.findOne({
+            username,
+            usertype
+        });
         if(!user){
-            return res.status(400).json({error: "Please try to login with correct credentials."})
+            success = false;
+            return res.status(400).json({success,error: "Please try to login with correct credentials."})
         }
 
         const passwordCompare = await bcrypt.compare(password, user.password);
         if(!passwordCompare){
-            return res.status(400).json({error: "Please try to login with correct credentials."})
+            success = false;
+            return res.status(400).json({success, error: "Please try to login with correct credentials."})
         }
        //Fetching token json
         const payload = {
@@ -130,7 +140,8 @@ router.post('/login',[
         }
         //digital signature using
         const authToken = jwt.sign(payload, JWT_SECRET);
-        res.json({authToken})
+        success = true;
+        res.json({success, authToken})
 
 
     } catch (error) {
