@@ -11,6 +11,39 @@ const UserStudentSchema = new Schema({
         type: String,
         required: true
     },
+    name:{
+        type: String
+    },
+    dob:{
+        type: Date
+    },
+    address:{
+        type: String
+    },
+    grade:{
+        type: String
+    },
+    gender:{
+        type: String
+    },
+    phone:{
+        type: String
+    },
+    house:{
+        type: String
+    },
+    fathername:{
+        type: String
+    },
+    mothername:{
+        type: String
+    },
+    fatherphone:{
+        type: String
+    },
+    motherphone:{
+        type: String
+    },
     usertype:{
         type:String,
         required:true

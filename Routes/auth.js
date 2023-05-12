@@ -21,8 +21,10 @@ Doesnt require Authentication (No login required)
 
 router.post('/createuser',
     [
-        body('username',"Username is wrong").trim().isLength({min:3}),
-        body('password','incorrect password').isLength({min:3})
+        body('username',"Invalid Username.").trim().isLength({min:3}),
+        body('password','Bad password').isLength({min:3}),
+        body('name',"Name must be longer").trim().isLength({min:3}),
+        body('usertype',"Cannot be empty.").trim().isLength({min:0})
     ]
 ,async (req,res)=>{
     let success = false;
@@ -61,6 +63,17 @@ router.post('/createuser',
         usertype: req.body.usertype,
         username: req.body.username,
         password: secPassword,
+        name: req.body.name,
+        dob: req.body.dob,
+        address: req.body.address,
+        grade: req.body.grade,
+        gender: req.body.gender,
+        phone: req.body.phone,
+        house: req.body.house,
+        fathername: req.body.fathername,
+        mothername: req.body.mothername,
+        fatherphone: req.body.fatherphone,
+        motherphone: req.body.motherphone
     })
 
     //Fetching token json
