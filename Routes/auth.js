@@ -108,7 +108,6 @@ END of ROUTE 1 : SIGN UP
 */
 
 
-
 /*
 -----------------
 START of ROUTE 2 : LOG IN
@@ -116,7 +115,6 @@ Authenticate a user using: POST '/api/auth/login'.
 *No login required
 -------------------
 */
-
 
 router.post('/login',[
     body('username', 'Not a valid username').isLength({min: 5}),
@@ -180,8 +178,6 @@ Get a user's details: POST '/api/auth/getuser'.
 */
 
 router.post('/getuser', fetchuser, async (req, res) =>{
-    
-
     try {
         const userId = req.user.id;
         const user = await UserStd.findById(userId).select('-password');

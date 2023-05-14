@@ -132,14 +132,9 @@ GET '/api/result/deletresult'.
 * user must be logged in
 -------------------
 */
-router.delete('/deleteresult/:id',fetchuser, [
-    body('name','Enter a valid name.').isLength({min:5}),
-    body('userresult','Enter a valid result.').isLength({min:5}) 
-],
+router.delete('/deleteresult/:id',fetchuser,
 async (req,res)=>{
     try {
-        //desctructer data from request
-        const {name, userresult} = req.body;
 
         //Find result to be Deleted
         let result = await Result.findById(req.params.id);

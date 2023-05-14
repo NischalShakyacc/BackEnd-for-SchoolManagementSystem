@@ -16,7 +16,8 @@ app.use(express.json())
 app.use('/api/auth', require('./routes/auth'))
 app.use('/api/studentInfo', require('./routes/studentInfo'))
 app.use('/api/result', require('./routes/result'))
+app.use('/api/notice', require('./routes/notice'))
 
 app.listen(port, () => {
-  console.log(`Example app listening on port ${port}`)
+  console.log(`School app listening on port ${port}`)
 })
