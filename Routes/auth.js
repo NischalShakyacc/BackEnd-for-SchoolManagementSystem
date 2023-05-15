@@ -1,7 +1,8 @@
 const express = require('express');
 //const connectToMongo = require('./db');
 const router  = express.Router();
-const UserStd = require('../models/Students');
+const UserAdmin = require('../models/Admins');
+const UserStudent = require('../models/Students')
 const { body, validationResult } = require('express-validator');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken')
@@ -20,7 +21,8 @@ Doesnt require Authentication (No login required)
 -------------------
 */
 
-router.post('/createuser',
+//Only admin can do
+router.post('/createuser',fetchuser, isAdmin,
     [
         body('username',"Invalid Username.").trim().isLength({min:3}),
         body('password','Bad password').isLength({min:3}),
@@ -32,7 +34,7 @@ router.post('/createuser',
 
     /*
     send data to database
-    const studentUser = UserStd(req.body);
+    const studentUser = UserAdmin(req.body);
     // studentUser = studentUser(req.body);
     //studentUser.save();
     res.send("hello");
@@ -46,60 +48,91 @@ router.post('/createuser',
     }
 
     try{
-    //Check whether the same username exists already
-    let  user = await UserStd.findOne({
-        username: req.body.username
-        });
-    if(user){
-        success = false;
-        return res.status(400).json({success,error: "Sorry a user with this username already exists"})
-    }
+        //Check if adding admin or student
+        if(req.body.usertype === "Admin"){
+        //Check whether the same username exists already
+            let  user = await UserAdmin.findOne({
+                username: req.body.username
+                });
+            if(user){
+                success = false;
+                return res.status(400).json({success,error: "Sorry a user with this username already exists"})
+            }
 
-    //Encrypting the password (hashing)
-    const salt = await bcrypt.genSalt(10);
-    const secPassword = await bcrypt.hash(req.body.password,salt);
+            //Encrypting the password (hashing)
+            const salt = await bcrypt.genSalt(10);
+            const secPassword = await bcrypt.hash(req.body.password,salt);
 
-    //Create a new User
-    user = await UserStd.create({
-        usertype: req.body.usertype,
-        username: req.body.username,
-        password: secPassword,
-        name: req.body.name,
-        dob: req.body.dob,
-        address: req.body.address,
-        grade: req.body.grade,
-        gender: req.body.gender,
-        phone: req.body.phone,
-        house: req.body.house,
-        fathername: req.body.fathername,
-        mothername: req.body.mothername,
-        fatherphone: req.body.fatherphone,
-        motherphone: req.body.motherphone
-    })
+            //Create a new User
+            user = await UserAdmin.create({
+                usertype: req.body.usertype,
+                username: req.body.username,
+                password: secPassword,
+                name: req.body.name,
+                dob: req.body.dob,
+                address: req.body.address,
+                grade: req.body.grade,
+                gender: req.body.gender,
+                phone: req.body.phone
+            })
 
-    //Fetching token json
-    const data = {
-        user:{
-            id:user.id
+            //Fetching token json
+            const data = {
+                user:{
+                    id:user.id
+                }
+            }
+            const authToken = jwt.sign(data, JWT_SECRET);
+
+            success=true;
+            res.json({success,authToken})
+        }else if(req.body.usertype === "Student"){
+            //Check whether the same username exists already
+            let  user = await UserStudent.findOne({
+                username: req.body.username
+                });
+            if(user){
+                success = false;
+                return res.status(400).json({success,error: "Sorry a user with this username already exists"})
+            }
+
+            //Encrypting the password (hashing)
+            const salt = await bcrypt.genSalt(10);
+            const secPassword = await bcrypt.hash(req.body.password,salt);
+
+            //Create a new User
+            user = await UserStudent.create({
+                usertype: req.body.usertype,
+                username: req.body.username,
+                password: secPassword,
+                name: req.body.name,
+                dob: req.body.dob,
+                address: req.body.address,
+                grade: req.body.grade,
+                gender: req.body.gender,
+                phone: req.body.phone,
+                house: req.body.house,
+                fathername: req.body.fathername,
+                mothername: req.body.mothername,
+                fatherphone: req.body.fatherphone,
+                motherphone: req.body.motherphone
+            })
+
+            //Fetching token json
+            const data = {
+                user:{
+                    id:user.id
+                }
+            }
+            const authToken = jwt.sign(data, JWT_SECRET);
+
+            success=true;
+            res.json({success,authToken})
         }
-    }
-    const authToken = jwt.sign(data, JWT_SECRET);
-
-    success=true;
-    res.json({success,authToken})
-
     }  catch(error){
         console.log(error.message);
         res.status(500).send("Internal Server error occured.")
     }
-    // .then(user => res.json(user))
-    // .catch(err => {console.log(err)
-    //     res.json({
-    //         error:'Please Enter u unique username',
-    //         message : err.message
-    //     })
-    //     }
-    // )
 })
 
 /*
@@ -107,6 +140,7 @@ router.post('/createuser',
 END of ROUTE 1 : SIGN UP
 -------------------
 */
+
 
 
 /*
@@ -130,10 +164,18 @@ router.post('/login',[
 
     const {username, password,usertype} = req.body;
     try {
-        let user = await UserStd.findOne({
-            username,
-            usertype
-        });
+        let user ;
+        if(usertype === "Admin"){
+            user = await UserAdmin.findOne({
+                username,
+                usertype
+            });
+        }else if(usertype === "Student"){
+            user = await UserStudent.findOne({
+                username,
+                usertype
+            });
+        }
         if(!user){
             success = false;
             return res.status(400).json({success,error: "Please try to login with correct credentials."})
@@ -181,10 +223,15 @@ Get a user's details: POST '/api/auth/getuser'.
 router.post('/getuser', fetchuser, async (req, res) =>{
     try {
         const userId = req.user.id;
-        const user = await UserStd.findById(userId).select('-password');
-        res.send(user)
+        const userType =  req.user.usertype
+        if(userType === "Admin"){
+            const user = await UserAdmin.findById(userId).select('-password');
+            res.send(user)
+        }else if(userType === "Student"){
+            const user = await UserStudent.findById(userId).select('-password');
+            res.send(user)
+        }
     } catch (error) {
-        console.log(error.message);
         res.status(500).send("Internal server error occured.")
     }
 })

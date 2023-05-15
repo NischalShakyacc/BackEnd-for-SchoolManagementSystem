@@ -1,8 +1,9 @@
-const UserAdmin = require("../models/Students")
+const UserAdmin = require("../models/Admins")
 
 const isAdmin = async (req, res, next) => {
+    console.log(req.user)
     try {
-        const user = await UserAdmin.findById(req.user);
+        const user = await UserAdmin.findById(req.user.id);
         if (!user || user.usertype !== "Admin") {
         return res.status(403).json({ message: "Unauthorized" });
         }

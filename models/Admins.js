@@ -29,23 +29,9 @@ const UserAdminSchema = new Schema({
     phone:{
         type: String
     },
-    house:{
-        type: String
-    },
-    fathername:{
-        type: String
-    },
-    mothername:{
-        type: String
-    },
-    fatherphone:{
-        type: String
-    },
-    motherphone:{
-        type: String
-    },
     usertype:{
         type:String,
+        default: "Admin",
         required:true
     },
     date:{

@@ -46,7 +46,8 @@ const UserStudentSchema = new Schema({
     },
     usertype:{
         type:String,
-        required:true
+        required:true,
+        default: "Student",
     },
     date:{
         type: Date,

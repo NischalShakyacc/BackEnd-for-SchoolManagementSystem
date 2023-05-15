@@ -129,7 +129,7 @@ async (req,res)=>{
         }
 
         notice = await Notice.findByIdAndDelete(req.params.id)
-        res.json({"Success":"Notice is deleted.",notice:notice})  
+        res.json({"Success":"Notice is deleted."})  
 
     } catch (error) {
         console.log(error.message); 
