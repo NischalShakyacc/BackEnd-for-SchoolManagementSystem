@@ -1,7 +1,6 @@
 const UserAdmin = require("../models/Admins")
 
 const isAdmin = async (req, res, next) => {
-    console.log(req.user)
     try {
         const user = await UserAdmin.findById(req.user.id);
         if (!user || user.usertype !== "Admin") {

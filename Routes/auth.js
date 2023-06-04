@@ -22,23 +22,18 @@ Doesnt require Authentication (No login required)
 */
 
 //Only admin can do
-router.post('/createuser',fetchuser, isAdmin,
+
+
+router.post('/createuser', fetchuser, isAdmin,
     [
         body('username',"Invalid Username.").trim().isLength({min:3}),
         body('password','Bad password').isLength({min:3}),
-        body('name',"Name must be longer").trim().isLength({min:3}),
-        body('usertype',"Cannot be empty.").trim().isLength({min:0})
+        body('name',"Name must be longer").trim().isLength({min:4}),
+        body('usertype',"Cannot be empty.").trim().isLength({min:0}),
+        body('grade',"Cannot be empty.").trim().isLength({min:0})
     ]
 ,async (req,res)=>{
     let success = false;
-
-    /*
-    send data to database
-    const studentUser = UserAdmin(req.body);
-    // studentUser = studentUser(req.body);
-    //studentUser.save();
-    res.send("hello");
-    */
 
     // If errors return bad request along with errors
     const errors = validationResult(req);
@@ -130,7 +125,6 @@ router.post('/createuser',fetchuser, isAdmin,
             res.json({success,authToken})
         }
     }  catch(error){
-        console.log(error.message);
         res.status(500).send("Internal Server error occured.")
     }
 })
@@ -162,7 +156,7 @@ router.post('/login',[
         return res.status(400).json({errors: errors.array()});
     }
 
-    const {username, password,usertype} = req.body;
+    const {username,password,usertype} = req.body;
     try {
         let user ;
         if(usertype === "Admin"){
@@ -186,10 +180,11 @@ router.post('/login',[
             success = false;
             return res.status(400).json({success, error: "Please try to login with correct credentials."})
         }
-       //Fetching token json
+        //Fetching token json
         const payload = {
             user:{
-                id:user.id
+                id : user.id,
+                usertype : user.usertype
             }
         }
         //digital signature using
@@ -199,7 +194,6 @@ router.post('/login',[
 
 
     } catch (error) {
-        console.log(error.message);
         res.status(500).send("Internal server error occured.")
     }
 })
@@ -223,16 +217,18 @@ Get a user's details: POST '/api/auth/getuser'.
 router.post('/getuser', fetchuser, async (req, res) =>{
     try {
         const userId = req.user.id;
-        const userType =  req.user.usertype
-        if(userType === "Admin"){
-            const user = await UserAdmin.findById(userId).select('-password');
-            res.send(user)
-        }else if(userType === "Student"){
-            const user = await UserStudent.findById(userId).select('-password');
-            res.send(user)
+
+        let user = await UserAdmin.findById(userId).select('-password');
+
+        //if not admin
+        if(!user){
+            let user = await UserStudent.findById(userId).select('-password');
+            res.send(user);
+            return
         }
+        res.send(user);
     } catch (error) {
-        res.status(500).send("Internal server error occured.")
+        res.status(500).send("Internal Server Error Ocuured." + error)
     }
 })
 

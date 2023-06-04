@@ -18,10 +18,9 @@ get user notices'.
 router.get('/fetchnotice', fetchuser, async (req,res)=>{
     try {
         //search for all notices associated with any user
-        const notices = await Notice.find({});
+        const notices = await Notice.find({}).sort({"_id":-1});
         res.json(notices);
     } catch (error) {
-        console.log(error.message);
         res.status(500).send("Internal Server error occured." + error.message)
     }       
 })

@@ -34,6 +34,10 @@ const UserAdminSchema = new Schema({
         default: "Admin",
         required:true
     },
+    image:{
+        data: Buffer,
+        contentType:String
+    },
     date:{
         type: Date,
         default: Date.now
