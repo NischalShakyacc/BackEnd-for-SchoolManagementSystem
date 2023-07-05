@@ -8,9 +8,24 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken')
 var fetchuser = require("../middleware/fetchuser.js")
 var isAdmin = require("../middleware/isAdmin")
+//const multer = require('multer');
 
 
 const JWT_SECRET = 'Nischalm@kingTh!s@app'
+
+//Set storage
+/*
+const Storage = multer.diskStorage({
+    destination: 'uploads',
+    filename: (req,file,cb)=>{
+        cb(null,file.originalname);
+    }
+});
+
+const upload = multer(
+    { storage: Storage }
+    ).single('testImage');
+*/
 
 /*
 -----------------
@@ -26,11 +41,12 @@ Doesnt require Authentication (No login required)
 
 router.post('/createuser', fetchuser, isAdmin,
     [
-        body('username',"Invalid Username.").trim().isLength({min:3}),
-        body('password','Bad password').isLength({min:3}),
+        body('username',"Invalid Username.").trim().isLength({min:5}),
+        body('password','Bad password').isLength({min:5}),
         body('name',"Name must be longer").trim().isLength({min:4}),
         body('usertype',"Cannot be empty.").trim().isLength({min:0}),
-        body('grade',"Cannot be empty.").trim().isLength({min:0})
+        body('grade',"Cannot be empty.").trim().isLength({min:0}),
+        body('email',"Enter Valid email.").trim().isEmail()
     ]
 ,async (req,res)=>{
     let success = false;
@@ -41,7 +57,19 @@ router.post('/createuser', fetchuser, isAdmin,
         success = false;
         return res.status(400).json({success,errors: errors.array()});
     }
-
+    /*
+    const Image ={};
+    upload(req, res,(err)=>{
+        if(err){
+            console.log(err);
+        }else{
+            Image = {
+                data: req.file.filename,
+                contentType: 'image/png'
+            }
+        }
+    })
+    */
     try{
         //Check if adding admin or student
         if(req.body.usertype === "Admin"){
@@ -68,7 +96,9 @@ router.post('/createuser', fetchuser, isAdmin,
                 address: req.body.address,
                 grade: req.body.grade,
                 gender: req.body.gender,
-                phone: req.body.phone
+                phone: req.body.phone,
+                email: req.body.email,
+                //image: Image
             })
 
             //Fetching token json
@@ -110,7 +140,8 @@ router.post('/createuser', fetchuser, isAdmin,
                 fathername: req.body.fathername,
                 mothername: req.body.mothername,
                 fatherphone: req.body.fatherphone,
-                motherphone: req.body.motherphone
+                motherphone: req.body.motherphone,
+                email: req.body.email
             })
 
             //Fetching token json
@@ -136,7 +167,6 @@ END of ROUTE 1 : SIGN UP
 */
 
 
-
 /*
 -----------------
 START of ROUTE 2 : LOG IN
@@ -146,7 +176,7 @@ Authenticate a user using: POST '/api/auth/login'.
 */
 
 router.post('/login',[
-    body('username', 'Not a valid username').isLength({min: 5}),
+    body('username', 'Not a valid username').trim().isLength({min: 5}),
     body('password', 'Password cannot be empty.').exists(),
 ],async (req, res) =>{
     let success = false;

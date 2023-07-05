@@ -9,6 +9,9 @@ const noticeSchema = new Schema({
     usernotice:{
         type: String 
     },
+    attachments: {
+        type: String
+    },
     date:{
         type: Date,
         default: Date.now 

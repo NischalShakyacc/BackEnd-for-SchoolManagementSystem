@@ -1,9 +1,25 @@
 const express = require('express')
 const Notice = require('../models/Notices')
+const multer = require('multer')
 
 var fetchuser = require('../middleware/fetchuser')
 const { body, validationResult } = require('express-validator');
+const isAdmin = require('../middleware/isAdmin');
 const router = express.Router();
+
+let storage = multer.diskStorage({
+    // Directory where uploaded files will be stored
+    destination: 'public/images',
+    filename: (req,file,cb) => {
+        // Rename the file with a unique name
+        cb(null,Date.now()+file.originalname);
+    }
+})
+
+let upload = multer({
+    storage: storage
+})
+
 /*
 -----------------
 
@@ -36,32 +52,42 @@ add user notices'.
 -------------------
 */
 
-router.post('/addnotice', fetchuser, [
-    body('title','Enter a longer title.').trim().isLength({min:5}),
-    body('usernotice','User notice must be at least 10 lettes.').isLength({min:10}) 
-],async (req,res)=>{
+//without using image
+router.post(
+    '/addnotice', 
+    fetchuser,
+    [
+        body('title','Enter a longer title.').trim().isLength({min:5}),
+        body('usernotice','User notice must be at least 10 letters.').isLength({min:10})         
+    ],async (req,res)=>{
     try {
+        let success = false;
         const {title,usernotice} = req.body;
 
         //validation error results
         const errors = validationResult(req);
         if(!errors.isEmpty()){
-            return res.status(400).json({errors: errors.array()});
+            return res.status(400).json({success,errors: errors.array()});
         }
 
         //search for all notices to display
         const notice = new Notice({
             title,
-            usernotice
+            usernotice,
+            
         });
+
         const savedNotice = await notice.save()
-        res.json(savedNotice);
+        success = true
+        res.json({success, savedNotice});
         
     } catch (error) {
         console.log(error.message);
         res.status(500).send("Internal Server error occured." + error.message)
     }       
 })
+
+
 
 /*
 -----------------
@@ -71,19 +97,20 @@ GET '/api/notice/updatenotice'.
 * user must be logged in
 -------------------
 */
-router.put('/updatenotice/:id',fetchuser, [
+router.put('/updatenotice/:id',fetchuser,isAdmin, [
     body('title','Title must be longer than 10 letter.').trim().isLength({min:10}),
     body('usernotice','Enter a longer notice.').trim().isLength({min:10}) 
 ],
 async (req,res)=>{
     try {
+        let success = false;
         //desctructer data from request
         const {title, usernotice} = req.body;
 
         // If errors return bad request along with errors 
         const errors = validationResult(req);
         if(!errors.isEmpty()){
-            return res.status(400).json({errors: errors.array()});
+            return res.status(400).json({success,errors: errors.array()});
         }
 
         //creat an object to be inserted to database
@@ -99,7 +126,8 @@ async (req,res)=>{
 
         notice = await Notice.findOneAndUpdate(req.params.id,{$set: newNotice},{new:true}); 
 
-        res.json({notice}) 
+        success = true
+        res.json({success, notice}) 
 
     } catch (error) {
         console.log(error.message); 
@@ -116,7 +144,7 @@ GET '/api/norice/deletenotice'.
 * user must be logged in
 -------------------
 */
-router.delete('/deletenotice/:id',fetchuser,
+router.delete('/deletenotice/:id',fetchuser,isAdmin,
 async (req,res)=>{
     try {
         //desctructer data from request
@@ -136,5 +164,39 @@ async (req,res)=>{
     }
     
 })
+
+router.post('/addnoticephoto',
+    upload.single('attachments'),
+    fetchuser,
+    isAdmin,
+async (req,res)=>{
+    try {
+        //desctructer data from request
+        const title = req.body.title;
+        const usernotice = req.body.usernotice;
+
+        let attachments;
+        if(req.file){
+            attachments = req.file.filename;
+        }
+
+        const newNotice = new Notice({
+            title,
+            usernotice,
+            attachments
+        });
+
+        newNotice.save()
+        .then(()=>res.json(newNotice))
+        .catch(err => res.status(400).json(err))
+
+    } catch (error) {
+        console.log(error.message); 
+        res.status(500).send("Internal Server error occured.")
+    }
+    
+})
+
+
 
 module.exports = router 

@@ -44,10 +44,16 @@ const UserStudentSchema = new Schema({
     motherphone:{
         type: String
     },
+    motherphone:{
+        type: String
+    },
     usertype:{
         type:String,
         required:true,
         default: "Student",
+    },
+    image: {
+        type: String
     },
     date:{
         type: Date,

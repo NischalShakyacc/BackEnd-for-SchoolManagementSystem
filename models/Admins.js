@@ -36,11 +36,17 @@ const UserAdminSchema = new Schema({
     },
     image:{
         data: Buffer,
-        contentType:String
+        contentType: String  
     },
     date:{
         type: Date,
         default: Date.now
+    },
+    email:{
+        type: String
+    },
+    image:{
+        type: String
     }
 })
 
