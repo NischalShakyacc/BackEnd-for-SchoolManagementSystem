@@ -120,7 +120,6 @@ router.post('/addenroll', [
         res.json(saveenroll);
         
     } catch (error) {
-        console.log(error.message);
         res.status(500).send("Internal Server error occured." + error.message)
     }       
 })
@@ -176,7 +175,6 @@ async (req,res)=>{
         res.json({"Success":"Notice is deleted."})  
 
     } catch (error) {
-        console.log(error.message); 
         res.status(500).send("Internal Server error occured.")
     }
     

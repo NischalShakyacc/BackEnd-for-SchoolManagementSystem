@@ -1,5 +1,4 @@
 const express = require('express');
-//const connectToMongo = require('./db');
 const router  = express.Router();
 const UserAdmin = require('../models/Admins');
 const UserStudent = require('../models/Students')
@@ -8,24 +7,10 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken')
 var fetchuser = require("../middleware/fetchuser.js")
 var isAdmin = require("../middleware/isAdmin")
-//const multer = require('multer');
-
 
 const JWT_SECRET = 'Nischalm@kingTh!s@app'
 
-//Set storage
-/*
-const Storage = multer.diskStorage({
-    destination: 'uploads',
-    filename: (req,file,cb)=>{
-        cb(null,file.originalname);
-    }
-});
 
-const upload = multer(
-    { storage: Storage }
-    ).single('testImage');
-*/
 
 /*
 -----------------
@@ -57,19 +42,6 @@ router.post('/createuser', fetchuser, isAdmin,
         success = false;
         return res.status(400).json({success,errors: errors.array()});
     }
-    /*
-    const Image ={};
-    upload(req, res,(err)=>{
-        if(err){
-            console.log(err);
-        }else{
-            Image = {
-                data: req.file.filename,
-                contentType: 'image/png'
-            }
-        }
-    })
-    */
     try{
         //Check if adding admin or student
         if(req.body.usertype === "Admin"){
@@ -234,6 +206,56 @@ router.post('/login',[
 END of ROUTE 2 : lOG IN
 -------------------
 */
+
+/*
+-----------------
+Start of ROUTE 3 : Change Password
+Get a user's details: POST '/api/auth/getuser'. 
+* required user to be logged in
+-------------------
+*/
+router.post('/changepassword',fetchuser, [
+    body('newPassword', 'Password cannot be empty.').exists().isLength({min:5})],
+    async (req, res) =>{
+    try {
+        //Encrypting the password (hashing)
+        let success = false;
+        const salt = await bcrypt.genSalt(10);
+
+        const {username, currentpassword, newPassword} = req.body;
+
+        const adminuser = await UserAdmin.findOne({username: username});
+        if(adminuser){
+            const passwordCompare = await bcrypt.compare(currentpassword, adminuser.password);
+            if(passwordCompare){
+                const secPassword = await bcrypt.hash(newPassword,salt);
+                adminuser.password = secPassword;
+                await adminuser.save();
+                success = true;
+                res.json({ success, message: 'Password changed successfully.' });
+            }
+        }
+        //if not admin
+        const studentuser = await UserStudent.findOne({username:username});
+        if(studentuser){
+            const compareStdPassword = await bcrypt.compare(currentpassword, studentuser.password);
+            if(compareStdPassword){
+                const secPassword = await bcrypt.hash(newPassword,salt);
+                studentuser.password = secPassword;
+                await studentuser.save();
+                success = true;
+                res.json({ success, message: 'Password changed successfully.' });
+            }
+        }
+
+        if(!adminuser && !studentuser){
+            res.json({ success, message: 'User Not Found.' });
+        }
+
+    } catch (error) {
+        res.status(500).send("Internal Server Error Ocuured." + error)
+    }
+})
 
 
 /*

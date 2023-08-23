@@ -1,6 +1,6 @@
 const connectToMongo = require('./db');
 //using cors
-var cors = require('cors')
+const cors = require('cors')
 const path = require('path')
 
 connectToMongo();
