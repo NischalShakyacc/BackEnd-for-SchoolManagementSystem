@@ -55,9 +55,18 @@ update user information'.
 
 router.put('/updatestudent/:id', fetchuser, 
 [
-    body('name','Name must be longer than  4 letters.').trim().isLength({min:4}),
-    
+    body('name','Name must be longer than  4 letters.').trim().isLength({min:4,max:50}),
+    body('phone','Phone number must be 10 digits.').trim().isLength({min:0,max:10}), 
     body('gender','Gender number must Male, Female or Others.').trim().isLength({min:4}),
+    body('address','Enter Valid Address').trim().isLength({min:4}),
+    body('grade','Enter Valid Grade').trim().isIn(['Toddler', 'Nursery','KG','1','2','3','4','5','6','7','8','9','10']),
+    body('house','Enter Valid House.').trim().isIn(['Yellow', 'Blue','Green','Red','Matterhorn','Everest','Kanchanjunga','Fujiyama']),
+    body('fathername','Enter Valid Name.').trim().isLength({min:0, max:50}),
+    body('mothername','Enter Valid Name.').trim().isLength({min:0, max:50}),
+    body('fatherphone','Phone number must be 10 digits.').trim().isLength({min:0,max:10}),
+    body('motherphone','Phone number must be 10 digits.').trim().isLength({min:0,max:10}),
+    body('email','Email is invalid.').isEmail()
+    
 ],async (req,res)=>{
     try{
         let success = true;
@@ -68,7 +77,7 @@ router.put('/updatestudent/:id', fetchuser,
             return res.status(400).json({errors: errors.array()});
         }
         
-        const {name, dob, address, gender, phone, house, fathername, mothername,fatherphone, motherphone } = req.body;
+        const {name, dob, address, gender, phone, house, fathername, mothername,fatherphone, motherphone,email } = req.body;
         
         const newStudent = {};
         if(name){newStudent.name = name};
@@ -89,6 +98,7 @@ router.put('/updatestudent/:id', fetchuser,
         if(mothername){newStudent.mothername = mothername};
         if(fatherphone){newStudent.fatherphone = fatherphone};
         if(motherphone){newStudent.motherphone = motherphone};
+        if(email){newStudent.email = email};
 
         //find user to be updated
 

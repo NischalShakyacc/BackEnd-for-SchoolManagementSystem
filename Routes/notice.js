@@ -57,8 +57,8 @@ router.post(
     '/addnotice', 
     fetchuser,
     [
-        body('title','Enter a longer title.').trim().isLength({min:5}),
-        body('usernotice','User notice must be at least 10 letters.').isLength({min:10})         
+        body('title','Enter a longer title.').trim().isLength({min:10, max:32}),
+        body('usernotice','User notice must be at least 10 letters.').isLength({min:10, max: 100})         
     ],async (req,res)=>{
     try {
         let success = false;
@@ -98,8 +98,8 @@ GET '/api/notice/updatenotice'.
 -------------------
 */
 router.put('/updatenotice/:id',fetchuser,isAdmin, [
-    body('title','Title must be longer than 10 letter.').trim().isLength({min:10}),
-    body('usernotice','Enter a longer notice.').trim().isLength({min:10}) 
+    body('title','Title must be longer than 10 letter.').trim().isLength({min:10, max: 32}),
+    body('usernotice','Enter a longer notice.').trim().isLength({min:10, max:100}) 
 ],
 async (req,res)=>{
     try {
@@ -124,7 +124,10 @@ async (req,res)=>{
             return res.status(404).send("Not Found.")
         }
 
-        notice = await Notice.findOneAndUpdate(req.params.id,{$set: newNotice},{new:true}); 
+        notice = await Notice.findOneAndUpdate(
+            {_id: req.params.id},
+            {$set: newNotice},
+            {new:true}); 
 
         success = true
         res.json({success, notice}) 

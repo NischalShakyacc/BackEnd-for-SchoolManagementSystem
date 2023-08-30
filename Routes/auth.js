@@ -26,11 +26,11 @@ Doesnt require Authentication (No login required)
 
 router.post('/createuser', fetchuser, isAdmin,
     [
-        body('username',"Invalid Username.").trim().isLength({min:5}),
-        body('password','Bad password').isLength({min:5}),
-        body('name',"Name must be longer").trim().isLength({min:4}),
-        body('usertype',"Cannot be empty.").trim().isLength({min:0}),
-        body('grade',"Cannot be empty.").trim().isLength({min:0}),
+        body('username',"Invalid Username.").trim().isLength({min:5, max:32}),
+        body('password','Bad password').isLength({min:5, max:32}),
+        body('name',"Name must be longer").trim().isLength({min:4, max:50}),
+        body('usertype',"Cannot be empty.").trim().isIn(['Admin', 'Student']),
+        body('grade',"Cannot be empty.").trim().isIn(['Toddler', 'Nursery','KG','1','2','3','4','5','6','7','8','9','10']),
         body('email',"Enter Valid email.").trim().isEmail()
     ]
 ,async (req,res)=>{
@@ -148,7 +148,7 @@ Authenticate a user using: POST '/api/auth/login'.
 */
 
 router.post('/login',[
-    body('username', 'Not a valid username').trim().isLength({min: 5}),
+    body('username', 'Not a valid username').exists(),
     body('password', 'Password cannot be empty.').exists(),
 ],async (req, res) =>{
     let success = false;
@@ -214,17 +214,17 @@ Get a user's details: POST '/api/auth/getuser'.
 * required user to be logged in
 -------------------
 */
-router.post('/changepassword',fetchuser, [
-    body('newPassword', 'Password cannot be empty.').exists().isLength({min:5})],
+router.put('/changepassword',fetchuser, [
+    body('newPassword', 'Password should be 5 to 32 characters.').exists().isLength({min:5, max:32})],
     async (req, res) =>{
     try {
         //Encrypting the password (hashing)
         let success = false;
         const salt = await bcrypt.genSalt(10);
 
-        const {username, currentpassword, newPassword} = req.body;
+        const {id, currentpassword, newPassword} = req.body;
 
-        const adminuser = await UserAdmin.findOne({username: username});
+        const adminuser = await UserAdmin.findOne({_id: id});
         if(adminuser){
             const passwordCompare = await bcrypt.compare(currentpassword, adminuser.password);
             if(passwordCompare){
@@ -233,10 +233,11 @@ router.post('/changepassword',fetchuser, [
                 await adminuser.save();
                 success = true;
                 res.json({ success, message: 'Password changed successfully.' });
+                return
             }
         }
         //if not admin
-        const studentuser = await UserStudent.findOne({username:username});
+        const studentuser = await UserStudent.findOne({_id:id});
         if(studentuser){
             const compareStdPassword = await bcrypt.compare(currentpassword, studentuser.password);
             if(compareStdPassword){
@@ -245,12 +246,11 @@ router.post('/changepassword',fetchuser, [
                 await studentuser.save();
                 success = true;
                 res.json({ success, message: 'Password changed successfully.' });
+                return
             }
         }
 
-        if(!adminuser && !studentuser){
-            res.json({ success, message: 'User Not Found.' });
-        }
+        res.json({ success, message: 'Invalid Data.' });
 
     } catch (error) {
         res.status(500).send("Internal Server Error Ocuured." + error)

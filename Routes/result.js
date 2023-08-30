@@ -42,7 +42,16 @@ GET '/api/result/addresult'.
 -------------------
 */
 router.post('/addresult/',fetchuser, isAdmin, [
-    body('resulttitle','Enter a valid name.').trim().isLength({min:5})
+    body('resulttitle','Enter a valid name.').trim().isLength({min: 5 ,max: 32}),
+    body('remarks','Enter a valid remark.').trim().isLength({min: 0 ,max: 32}),
+    body('subject1','Enter a valid subject.').trim().isLength({min: 0 ,max: 32}),
+    body('subject2','Enter a valid subject.').trim().isLength({min: 0 ,max: 32}),
+    body('subject3','Enter a valid subject.').trim().isLength({min: 0 ,max: 32}),
+    body('subject4','Enter a valid subject.').trim().isLength({min: 0 ,max: 32}),
+    body('subject5','Enter a valid subject.').trim().isLength({min: 0 ,max: 32}),
+    body('subject6','Enter a valid subject.').trim().isLength({min: 0 ,max: 32}),
+    body('subject7','Enter a valid subject.').trim().isLength({min: 0 ,max: 32}),
+    body('subject8','Enter a valid subject.').trim().isLength({min: 0 ,max: 32})
 ],
 async (req,res)=>{
     try {
@@ -50,7 +59,7 @@ async (req,res)=>{
         //desctructer data from request
         //const userid = req.params.userid
 
-        const {user, resulttitle, remarks, subject1, subject2, subject3, subject4 ,subject5, subject6, subject7, subject8, mark1, mark2,mark3, mark4, mark5, mark6, mark7, mark8, total, percentage  } = req.body;
+        const {user, resulttitle, remarks, subject1, subject2, subject3, subject4 ,subject5, subject6, subject7, subject8, mark1, mark2,mark3, mark4, mark5, mark6, mark7, mark8, total, percentage } = req.body;
 
         //Check if Student Exists
 
@@ -117,7 +126,7 @@ GET '/api/result/deletresult'.
 router.delete('/deleteresult/:id',fetchuser,isAdmin,
 async (req,res)=>{
     try {
-
+        let success = false;
         //Find result to be Deleted
         let result = await Result.findById(req.params.id);
         if(!result){
@@ -125,13 +134,14 @@ async (req,res)=>{
         }
 
          //Alllow delete if user does own
-         /*
+        /*
         if(result.user.toString() !==  req.user.id){
             return res.status(401).send("Not Allowed.")
         }*/
 
-        result = await Result.findByIdAndDelete(req.params.id)
-        res.json({"Success":"Result Deleted",result:result})  
+        result = await Result.findByIdAndDelete(req.params.id);
+        success = true;
+        res.json({success,"Success":"Result Deleted",result:result})  
 
     } catch (error) {
         console.log(error.message); 

@@ -56,27 +56,30 @@ GET '/api/users/updateteacher'
 
 router.put('/updateteacher/:id', fetchuser,  isAdmin,
 [
-    body('name','Name must be longer than  4 letters.').trim().isLength({min:4}),
+    body('name','Name must be longer than  4 letters.').trim().isLength({min:4,max:50}),
     body('phone','Phone number must be 10 digits.').trim().isLength({min:10}), 
     body('gender','Gender number must Male, Female or Others.').trim().isLength({min:4}),
+    body('address','Enter Valid Address.').trim().isLength({min:4}),
+    body('grade','Enter Valid Grade.').trim().isIn(['Toddler', 'Nursery','KG','1','2','3','4','5','6','7','8','9','10']),
+    body('email','Enter Valid Email.').isEmail()
 ],async (req,res)=>{
     try{
+        let success = false;
         // If errors return bad request along with errors 
         const errors = validationResult(req);
         if(!errors.isEmpty()){
-            return res.status(400).json({errors: errors.array()});
+            return res.status(400).json({success,errors: errors.array()});
         }
         
-        const {name, phone, dob, address, grade, gender } = req.body;
+        const {name, phone, dob, address, grade, gender, email } = req.body;
         
         const newTeacher = {};
         if(name){newTeacher.name = name};
         if(phone){newTeacher.phone = phone};
         if(dob){
             const parsedDate = parseISO(dob);
-            
             if(!isValid(parsedDate)){
-                res.status(400).json({ error: 'Invalid date of birth' });
+                res.status(400).json({ success, error: 'Invalid date of birth' });
                 return;
             }
             newTeacher.dob = parsedDate;
@@ -84,6 +87,7 @@ router.put('/updateteacher/:id', fetchuser,  isAdmin,
         if(address){newTeacher.address = address};
         if(grade){newTeacher.grade = grade};
         if(gender){newTeacher.gender = gender};
+        if(email){newTeacher.email = email};
 
         //find user to be updated
 
@@ -91,6 +95,7 @@ router.put('/updateteacher/:id', fetchuser,  isAdmin,
 
         if(!teacher){
             res.status(404).send("Not Found");
+            return res.status(400).json({success,message: 'User not found'});
         }
 
         if(teacher._id.toString() !== req.user.id){
@@ -98,8 +103,8 @@ router.put('/updateteacher/:id', fetchuser,  isAdmin,
         }
 
         teacher = await Teachers.findByIdAndUpdate(req.params.id, {$set: newTeacher},{new:true})
-
-        res.json({teacher})
+        success= true;
+        res.json({success,teacher})
     }catch(error){
         res.status(500).send("Internal Server error occured." + error.message)
     }

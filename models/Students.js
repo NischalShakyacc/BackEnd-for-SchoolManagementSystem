@@ -47,6 +47,9 @@ const UserStudentSchema = new Schema({
     motherphone:{
         type: String
     },
+    email:{
+        type: String
+    },
     usertype:{
         type:String,
         required:true,
