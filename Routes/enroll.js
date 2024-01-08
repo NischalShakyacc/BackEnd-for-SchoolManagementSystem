@@ -40,36 +40,38 @@ update user information'.
 */
 router.post('/addenroll', [
     body('firstName','Required.').trim().isLength({min:0,max:32}),
-    body('lastname','Required.').trim().isLength({min:0,max:32}), 
-    body('middleName','Required.').trim().isLength({min:0,max:32}), 
+    body('lastName','Required.').trim().isLength({min:0,max:32}), 
+    //body('middleName','Required.').trim(), 
     body('gender','Required.').trim().isLength({min:0,max:32}), 
-    body('streetAddress','Required.').trim().isLength({min:0,max:32}),
-    body('wardno','Required.').trim().isLength({min:0,max:32}),
-    body('city','Required.').trim().isLength({min:0,max:32}),
-    body('country','Required.').trim().isLength({min:0,max:32}),
-    body('nation','Required.').trim().isLength({min:0,max:32}),
-    body('dob','Required.').trim().isLength({min:0,max:32}),
-    body('fathername','Required.').trim().isLength({min:0,max:32}),
-    body('fatherphone','Required.').trim().isLength({min:0,max:32}),
-    body('mothername','Required.').trim().isLength({min:0,max:32}),
-    body('motherphone','Required.').trim().isLength({min:0,max:32}),
-    body('officename','Required.').trim().isLength({min:0,max:32}),
-    body('officephone','Required.').trim().isLength({min:0,max:32}),
-    body('guardianname','Required.').trim().isLength({min:0,max:32}),
-    body('guardianphone','Required.').trim().isLength({min:0,max:32}),
-    body('relation','Required.').trim().isLength({min:0,max:32}),
-    body('emergencyname','Required.').trim().isLength({min:0,max:32}),
-    body('emergencyaddress','Required.').trim().isLength({min:0,max:32}),
-    body('emergencyphone','Required.').trim().isLength({min:0,max:32}),
-    body('prevschool','Required.').trim().isLength({min:0,max:32}),
-    body('prevschooladdress','Required.').trim().isLength({min:0,max:32}),
-    body('prevschoolphone','Required.').trim().isLength({min:0,max:32}),
-    body('accessrequirements','Required.').trim().isLength({min:0,max:32}),
-    body('busaddress','Required.').trim().isLength({min:0,max:32}),
-    body('grade','Required.').trim().isLength({min:0,max:32}),
-    body('filler','Required.').trim().isLength({min:0,max:32})
+    // body('streetAddress','Required.').trim().isLength({min:0,max:32}),
+    // body('wardno','Required.').trim().isLength({min:0,max:32}),
+    // body('city','Required.').trim().isLength({min:0,max:32}),
+    // body('country','Required.').trim().isLength({min:0,max:32}),
+    // body('nation','Required.').trim().isLength({min:0,max:32}),
+    // body('dob','Required.').trim().isLength({min:0,max:32}),
+    // body('fathername','Required.').trim().isLength({min:0,max:32}),
+    // body('fatherphone','Required.').trim().isLength({min:0,max:32}),
+    // body('mothername','Required.').trim().isLength({min:0,max:32}),
+    // body('motherphone','Required.').trim().isLength({min:0,max:32}),
+    // body('officename','Required.').trim().isLength({min:0,max:32}),
+    // body('officephone','Required.').trim().isLength({min:0,max:32}),
+    // body('guardianname','Required.').trim().isLength({min:0,max:32}),
+    // body('guardianphone','Required.').trim().isLength({min:0,max:32}),
+    // body('relation','Required.').trim().isLength({min:0,max:32}),
+    // body('emergencyname','Required.').trim().isLength({min:0,max:32}),
+    // body('emergencyaddress','Required.').trim().isLength({min:0,max:32}),
+    // body('emergencyphone','Required.').trim().isLength({min:0,max:32}),
+    // body('prevschool','Required.').trim().isLength({min:0,max:32}),
+    // body('prevschooladdress','Required.').trim().isLength({min:0,max:32}),
+    // body('prevschoolphone','Required.').trim().isLength({min:0,max:32}),
+    // body('accessrequirements','Required.').trim().isLength({min:0,max:32}),
+    // body('busaddress','Required.').trim().isLength({min:0,max:32}),
+    // body('grade','Required.').trim().isLength({min:0,max:32}),
+    // body('filler','Required.').trim().isLength({min:0,max:32})
 ],async (req,res)=>{
     try {
+        let success = false;
+
         const {
             firstName,
             middleName,
@@ -98,8 +100,8 @@ router.post('/addenroll', [
             prevschoolphone,
             accessrequirements,
             busaddress,
-            grade,
-            filler
+            grade
+            
         } = req.body;
 
         //validation error results
@@ -137,11 +139,11 @@ router.post('/addenroll', [
             prevschoolphone,
             accessrequirements,
             busaddress,
-            grade,
-            filler
+            grade
         });
-        const saveenroll = await enroll.save()
-        res.json(saveenroll);
+        const saveenroll = await enroll.save();
+        success = true;
+        res.json({saveenroll, success});
         
     } catch (error) {
         res.status(500).send("Internal Server error occured." + error.message)

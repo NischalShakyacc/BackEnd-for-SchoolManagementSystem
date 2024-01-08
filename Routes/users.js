@@ -42,7 +42,6 @@ router.get('/getallteacher', fetchuser, async (req,res)=>{
     }
 })
 
-
 /*
 -----------------
 
@@ -52,7 +51,6 @@ GET '/api/users/updateteacher'
 
 -------------------
 */
-
 
 router.put('/updateteacher/:id', fetchuser,  isAdmin,
 [
